@@ -23,4 +23,12 @@ public class MoveShip : MonoBehaviour
         }
         transform.position += transform.rotation*Vector3.up*Time.deltaTime*mSpeed;
     }
+
+	public	void	Hyperspace() {
+		float	tHeight = Camera.main.orthographicSize;
+		float	tWidth = tHeight*Camera.main.aspect;
+		float	tNewX = Random.Range (-tWidth, tWidth);
+		float	tNewY = Random.Range (-tHeight, tHeight);
+		transform.position = new Vector2 (tNewX, tNewY);
+	}
 }
