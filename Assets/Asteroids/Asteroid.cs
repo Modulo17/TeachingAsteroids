@@ -6,7 +6,8 @@ public class Asteroid : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		mRB = GetComponent<Rigidbody2D>(); //Get RB componet from GameObject
+
+		mRB = GetComponent<Rigidbody2D>(); //Get RB component from GameObject
 		mStartPosition=transform.position;
 		mStartRotation = transform.rotation;
 		Reset ();
@@ -26,4 +27,15 @@ public class Asteroid : MonoBehaviour {
 	void Update () {
 	
 	}
+
+    #region Collision
+    void OnTriggerEnter2D(Collider2D vOther) {   //Must use 2D version
+        Debug.Log("OnTriggerEnter2D" + name + " with " + vOther.gameObject.name);
+    }
+
+    void OnCollisionEnter2D(Collision2D vOther) {
+        Debug.Log("OnCollisionEnter2D" + name + " with " + vOther.gameObject.name);
+    }
+    #endregion
+
 }
