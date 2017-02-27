@@ -11,7 +11,7 @@ public class PlayerShip : MonoBehaviour {
 	[Range(0, 3f)]
 	public 	float BulletSpeed = 1.0f;
 
-
+	bool	mActive=false;
 
 	public	GameObject	BulletSpawn;
 
@@ -42,13 +42,16 @@ public class PlayerShip : MonoBehaviour {
 		Show (false);
 		if (mLives > 0) {
 			mLives--;
-			Invoke("ReSpawn",2f);	//Show ship again
+			Invoke ("ReSpawn", 2f);	//Show ship again
+		} else {
+			GM.GameOver = true;
 		}
 	}
 
     #endregion
 
 	void	Show(bool vShow) {		//Show or hide ship
+		mActive=vShow;
 		GetComponent<SpriteRenderer> ().enabled = vShow;
 		GetComponent<Collider2D> ().enabled = vShow;
 	}
@@ -58,6 +61,7 @@ public class PlayerShip : MonoBehaviour {
         mRB = GetComponent<Rigidbody2D>(); //Get RB component from GameObject
         mRB.gravityScale = 0f;      //Turn gravity "off"
 		mStartPosition=transform.position;
+		Show (true);
     }
 
 	void	ReSpawn() {
@@ -71,19 +75,22 @@ public class PlayerShip : MonoBehaviour {
     Rigidbody2D mRB;  //Keep a reference to the RB
     //For Physics we use Fixed Update	
     void FixedUpdate() {
-        if (Input.GetKey(KeyCode.LeftArrow)) {      //Rotate ship, coudl use torque, but this looks better
-            mRB.MoveRotation(mRB.rotation+(RotationSpeed * Time.deltaTime));
-        }
-        if (Input.GetKey(KeyCode.RightArrow)) {
-            mRB.MoveRotation(mRB.rotation-(RotationSpeed * Time.deltaTime));
-        }
-        if (Input.GetKey(KeyCode.UpArrow)) {    //Apply force in direction of rotation
-            Vector2 tForce = Quaternion.Euler(0, 0, mRB.rotation) * Vector2.up * Time.deltaTime * Speed;
-            mRB.AddForce(tForce);
-        }
-		if (CoolDown() && Input.GetKey(KeyCode.Space)) {
-			Vector3	tFire = transform.rotation*Vector3.up;
-			GM.CreateBullet (BulletSpawn.transform.position, (BulletSpawn.transform.position-transform.position).normalized*BulletSpeed);
+		if (mActive) {
+			
+			if (Input.GetKey (KeyCode.LeftArrow)) {      //Rotate ship, coudl use torque, but this looks better
+				mRB.MoveRotation (mRB.rotation + (RotationSpeed * Time.deltaTime));
+			}
+			if (Input.GetKey (KeyCode.RightArrow)) {
+				mRB.MoveRotation (mRB.rotation - (RotationSpeed * Time.deltaTime));
+			}
+			if (Input.GetKey (KeyCode.UpArrow)) {    //Apply force in direction of rotation
+				Vector2 tForce = Quaternion.Euler (0, 0, mRB.rotation) * Vector2.up * Time.deltaTime * Speed;
+				mRB.AddForce (tForce);
+			}
+			if (CoolDown () && Input.GetKey (KeyCode.Space)) {
+				Vector3	tFire = transform.rotation * Vector3.up;
+				GM.CreateBullet (BulletSpawn.transform.position, (BulletSpawn.transform.position - transform.position).normalized * BulletSpeed);
+			}
 		}
     }
     #endregion
