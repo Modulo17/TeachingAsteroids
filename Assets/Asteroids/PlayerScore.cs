@@ -15,7 +15,7 @@ public class PlayerScore : MonoBehaviour {
     IEnumerator UpdateScore() {     //This CoRoutine will run in the background updating the score from the player every 1/2 second
         do {
             if(GM.PlayerShip!=null) {
-                mText.text = string.Format("Score {0}", GM.PlayerShip.Score);
+				mText.text = string.Format("Lives {1} Score {0}", GM.PlayerShip.Score,GM.PlayerShip.Lives);
             } else {
                 mText.text = string.Format("Player Dead");
             }
