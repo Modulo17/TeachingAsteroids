@@ -11,12 +11,19 @@ public class Asteroid : MonoBehaviour {
 	//Set up start position
 	void Start () {
 		mRB = GetComponent<Rigidbody2D>(); //Get RB component from GameObject
+		if (mSize == GM.AsteroidSize.SuperAsteroid) {
+			mRB.constraints = RigidbodyConstraints2D.FreezeRotation;
+		}
 		RandomMove ();
 	}
 
 	public	void	RandomMove() {
-		mRB.angularVelocity = Random.Range(-360f,360f);	//Random rotation
-		mRB.velocity = Quaternion.Euler(0,0,Random.Range(0,360f))* Vector2.up;	//Random move
+		if (mSize == GM.AsteroidSize.SuperAsteroid) {
+			mRB.velocity = Quaternion.Euler(0,0,Random.Range(0,360f))* Vector2.up*2f;	//Random move
+		} else {
+			mRB.angularVelocity = Random.Range(-360f,360f);	//Random rotation
+			mRB.velocity = Quaternion.Euler(0,0,Random.Range(0,360f))* Vector2.up;	//Random move
+		}
 	}
 
     #region Collision
@@ -33,10 +40,16 @@ public class Asteroid : MonoBehaviour {
 	public	void	Split() {		//Simple state machine
 		switch (mSize) {
 		case	GM.AsteroidSize.Big:
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);		//Make 2 medium ones and kill big one
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);
-			Destroy (gameObject);
-			GM.CreateExplosion (transform.position);
+			if (Random.Range (0, 10) < 5) {
+				GM.CreateAsteroid (transform.position, GM.AsteroidSize.SuperAsteroid);		//Super
+				Destroy (gameObject);
+				GM.CreateExplosion (transform.position);
+			} else {
+				GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);		//Make 2 medium ones and kill big one
+				GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);
+				Destroy (gameObject);
+				GM.CreateExplosion (transform.position);
+			}
 			return;
 		case	GM.AsteroidSize.Medium:
 			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
@@ -49,6 +62,12 @@ public class Asteroid : MonoBehaviour {
 			GM.CreateExplosion (transform.position);
 			Destroy (gameObject);
 			return;
+
+		case	GM.AsteroidSize.SuperAsteroid:
+			GM.PlayerShip.Lives++;			
+			GM.CreateExplosion (transform.position);
+			Destroy (gameObject);
+			break;
 		}
 	}
 

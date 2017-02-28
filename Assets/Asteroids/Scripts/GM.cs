@@ -11,6 +11,7 @@ public class GM : Singleton {
         Big=0
         ,Medium
         ,Small
+		,SuperAsteroid	//New Asteroid type
         ,None
     }
 

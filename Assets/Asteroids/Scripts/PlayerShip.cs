@@ -36,6 +36,10 @@ public class PlayerShip : MonoBehaviour {
 		get {
 			return	mLives;
 		}
+
+		set {
+			mLives = value;
+		}
 	}
 
 	public	void	Die() {
@@ -48,7 +52,6 @@ public class PlayerShip : MonoBehaviour {
 		}
 	}
 
-    #endregion
 
 	void	Show(bool vShow) {		//Show or hide ship
 		mActive=vShow;
@@ -70,6 +73,8 @@ public class PlayerShip : MonoBehaviour {
 		transform.rotation = Quaternion.identity;
 		Show (true);
 	}
+	#endregion
+
 
     #region PhysicsMove
     Rigidbody2D mRB;  //Keep a reference to the RB
@@ -88,7 +93,6 @@ public class PlayerShip : MonoBehaviour {
 				mRB.AddForce (tForce);
 			}
 			if (CoolDown () && Input.GetKey (KeyCode.Space)) {
-				Vector3	tFire = transform.rotation * Vector3.up;
 				GM.CreateBullet (BulletSpawn.transform.position, (BulletSpawn.transform.position - transform.position).normalized * BulletSpeed);
 			}
 		}
