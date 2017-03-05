@@ -4,9 +4,16 @@ using System.Collections;
 public class Asteroid : MonoBehaviour {
 
 
+	public enum AsteroidSize {
+		Big=0
+		,Medium
+		,Small
+		,Spaceship
+		,None
+	}
 
 	[HideInInspector]		//Don't show as its set in code
-	public	GM.AsteroidSize mSize;
+	public	AsteroidSize mSize;
 
 	Rigidbody2D mRB;  //Keep a reference to the RB
 
@@ -29,27 +36,27 @@ public class Asteroid : MonoBehaviour {
 		if (tSP) {		//If asteroid hits player, tell Asteroid to split
 			Split ();
 			GM.CreateExplosion (GM.PlayerShip.transform.position);		//Create explosion effect
-			GM.PlayerShip.Die ();		//Destroy player ship
+			GM.PlayerShip.Die ();										//Destroy player ship
 		}
     }
 
 
 	public	void	Split() {		//Simple state machine, allows Asteroids to split to smaller ones & eventually die
 		switch (mSize) {
-		case	GM.AsteroidSize.Big:
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);		//Make 2 medium ones and kill original one
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);
+		case	AsteroidSize.Big:
+			GM.CreateAsteroid (transform.position, AsteroidSize.Medium);		//Make 2 medium ones and kill original one
+			GM.CreateAsteroid (transform.position, AsteroidSize.Medium);
 			Destroy (gameObject);
 			GM.CreateExplosion (transform.position);
 			break;
-		case	GM.AsteroidSize.Medium:			//Make 3 small ones and kill original one
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
+		case	AsteroidSize.Medium:			//Make 3 small ones and kill original one
+			GM.CreateAsteroid (transform.position, AsteroidSize.Small);
+			GM.CreateAsteroid (transform.position, AsteroidSize.Small);
+			GM.CreateAsteroid (transform.position, AsteroidSize.Small);
 			Destroy (gameObject);
 			GM.CreateExplosion (transform.position);
 			break;
-		case	GM.AsteroidSize.Small:		//Small Asteroid just dies
+		case	AsteroidSize.Small:		//Small Asteroid just dies
 			GM.CreateExplosion (transform.position);
 			Destroy (gameObject);
 			break;
@@ -59,11 +66,11 @@ public class Asteroid : MonoBehaviour {
 	public	int	Score {			//Return the score for this kind of asteroid
 		get {
 			switch (mSize) {
-			case	GM.AsteroidSize.Big:
+			case	AsteroidSize.Big:
 				return	10;
-			case	GM.AsteroidSize.Medium:
+			case	AsteroidSize.Medium:
 				return	50;
-			case	GM.AsteroidSize.Small:
+			case	AsteroidSize.Small:
 				return	100;
 			default:
 				return	0;

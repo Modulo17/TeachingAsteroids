@@ -7,17 +7,12 @@ public class GM : Singleton {
 
     #region Prefabs
 
-    public enum AsteroidSize {
-        Big=0
-        ,Medium
-        ,Small
-        ,None
-    }
 
 	public Text 		GameOverText;
 	public GameObject 	ExplosionPrefab;
 	public GameObject 	BulletPrefab;
     public GameObject[] AsteroidPrefabs;
+	public GameObject 	PlayerPrefab;
 
 	public	Toggle		CheatToggle;
 
@@ -30,24 +25,154 @@ public class GM : Singleton {
 
     void Awake() {
         if (CreateSingleton<GM>(ref sGM)) {    //Do one time setup inside
-			GameOver=true;
+			CurrentState=State.None;
+			GameObject	tGO=Instantiate (PlayerPrefab);
+			mPlayerShip = tGO.GetComponent<PlayerShip> ();
         }
     }
     #endregion
+
+	#region States
+
+	PlayerScore	mPS;
+
+	public	static	PlayerScore	PS {
+		set {
+			sGM.mPS = value;
+		}
+		get {
+			return	sGM.mPS;
+		}
+	}
+
+	public	enum State {
+		Invalid
+		,None
+		,ShowIntro
+		,WaitIntro
+		,SpawnAsteroids
+		,WaitPlayerSafe
+		,PlayLevel
+		,PlayerDead
+		,GameOver
+		,WaitGameOver
+		,AsteroidsGone
+	}
+
+	State	mCurrentState=State.Invalid;
+
+	public	static	State	CurrentState {
+		get {
+			return	sGM.mCurrentState;
+		}
+		set {
+			if (sGM.mCurrentState != value) {
+				Debug.Log ("Exit State:" + sGM.mCurrentState + " Enter:" + value);
+				sGM.ExitState (sGM.mCurrentState);
+				sGM.mCurrentState = value;
+				sGM.EnterState (sGM.mCurrentState);
+			}
+		}
+	}
+
+	void	ExitState(State vState) {
+		switch (vState) {
+
+		case	State.WaitIntro:
+			PS.Intro = false;
+			return;
+
+		case	State.WaitGameOver:
+			PS.GameOver = false;
+			return;
+
+		case State.PlayLevel:
+			PlayerShip.Show (false);
+			return;
+
+		default:
+			return;
+		}
+	}
+
+	void	EnterState(State vState) {
+		switch (vState) {
+
+		case	State.None:
+			StartCoroutine(TimedStateChange(1f,State.ShowIntro));
+			return;
+
+		case	State.ShowIntro:
+			PS.Intro = true;
+			CurrentState = State.WaitIntro;
+			return;
+
+		case	State.WaitIntro:
+			StartCoroutine(InputStateChange(KeyCode.Space,State.SpawnAsteroids));
+			return;
+
+		case State.SpawnAsteroids:
+			NewAsteroids ();
+			StartCoroutine(TimedStateChange(1f,State.WaitPlayerSafe));
+			return;
+
+		case State.PlayLevel:
+			PlayerShip.Show (true);
+			return;
+
+		case	State.PlayerDead:
+			PS.GameOver = true;
+			StartCoroutine(TimedStateChange(5f,State.WaitGameOver));
+			return;
+
+		default:
+			return;
+		}
+	}
+
+	void	Update() {
+		ProcessState (CurrentState);
+	}
+
+	void	ProcessState(State vState) {
+		switch (vState) {
+
+		case	State.WaitPlayerSafe:
+			if (IsPlayerSafe (PlayerShip.transform.position)) {
+				CurrentState = State.PlayLevel;
+			}
+			return;
+
+		case	State.PlayLevel:
+			if (PlayerShip.Lives == 0) {
+				CurrentState=State.PlayerDead;
+			}
+			return;
+
+		default:
+			return;
+		}
+	}
+	#endregion
+
+	//Trigger state change after timeout
+	IEnumerator	TimedStateChange(float vTime, State vNewState) {
+		yield	return	new	WaitForSeconds (vTime);
+		CurrentState = vNewState;
+	}
+
+	//Trigger state change if key pressed
+	IEnumerator	InputStateChange(KeyCode vKey, State vNewState) {
+		while(!Input.GetKey(vKey)) {
+			yield	return null;
+		}
+		CurrentState = vNewState;
+	}
 
 
     #region Player
 
     PlayerShip  mPlayerShip;    //Keep variable hidden
-
-	public	static	bool	GameOver {
-		get {
-			return	sGM.GameOverText.enabled;
-		}
-		set {
-			sGM.GameOverText.enabled = value;
-		}
-	}
 
     public static PlayerShip PlayerShip {       //Allow access to Player ship globally
         get {
@@ -55,15 +180,10 @@ public class GM : Singleton {
         }
     }
 
-    public static void    RegisterPlayerShip(PlayerShip vPS) {
-		GameOver = false;
-        sGM.mPlayerShip = vPS;
-    }
-
 	public	static	void	NewAsteroids() {
 		for (int tI = 0; tI < 3; tI++) {
 			Vector3	tPosition=Quaternion.Euler(0,0,Random.Range(0,360))* Vector3.up;		//Random position 1 unit away
-			CreateAsteroid (tPosition+sGM.mPlayerShip.transform.position, AsteroidSize.Big);
+			CreateAsteroid (tPosition+sGM.mPlayerShip.transform.position, Asteroid.AsteroidSize.Big);
 		}
 	}
 	
@@ -71,7 +191,21 @@ public class GM : Singleton {
 
     #region Asteroids
 
-    public  static  void    CreateAsteroid(Vector3 tPosition,AsteroidSize vSize) {
+
+	//Is player ship safe, ie no asteroids near the player
+	public bool	IsPlayerSafe (Vector3 vPlayerPosition) {
+		Asteroid[] tAsteroids = FindObjectsOfType<Asteroid> ();
+		foreach (var tAsteroid in tAsteroids) {
+			Vector2	tPosition = (Vector2)vPlayerPosition - (Vector2)tAsteroid.transform.position;
+			if (tPosition.magnitude < 2f) {
+				return false;	//Too Close
+			}
+		}
+		return	true;
+	}
+
+
+	public  static  void    CreateAsteroid(Vector3 tPosition,Asteroid.AsteroidSize vSize) {
 		int	tIndex = (int)vSize;		//Converts enum to int (safe)
 		if (tIndex < GM.sGM.AsteroidPrefabs.Length) {		//Make sure we have sufficent prefabs
 			GameObject	tGO = Instantiate (GM.sGM.AsteroidPrefabs [tIndex]);		//Makes a GameObject from prefab

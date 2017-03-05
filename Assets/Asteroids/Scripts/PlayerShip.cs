@@ -55,35 +55,28 @@ public class PlayerShip : MonoBehaviour {
 			if (mLives > 0) {
 				mLives--;
 				Invoke ("ReSpawn", 2f);	//Show ship again
-			} else {
-				GM.GameOver = true;
-			}
+			} 
 		}
 	}
 
 
-	void	Show(bool vShow) {		//Show or hide ship
+	public	void	Show(bool vShow) {		//Show or hide ship
 		mActive=vShow;
 		mSR.enabled = vShow;
 		mCOL.enabled = vShow;
 	}
 
     void Start() {
-        GM.RegisterPlayerShip(this);        //Register ship with Game Manager
         mRB = GetComponent<Rigidbody2D>(); //Get RB component from GameObject
 		mSR=GetComponent<SpriteRenderer>();	//Cache key components for fast reuse
 		mCOL = GetComponent<Collider2D> ();
         mRB.gravityScale = 0f;      //Turn gravity "off"
 		mStartPosition=transform.position;
-		Show (true);
-		Invoke ("ReStartGame",2f);
+		Show (false);
     }
 
-	void	ReStartGame() {		//Called to spawn new Asteroids
-		GM.NewAsteroids ();
-	}
 
-	void	ReSpawn() {
+	public	void	ReSpawn() {
 		mSR.color = Color.white;		//Turn ship white again
 		mRB.velocity = Vector2.zero;
 		transform.position=mStartPosition;
