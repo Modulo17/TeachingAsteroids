@@ -3,17 +3,16 @@ using System.Collections;
 
 public class Bullet : MonoBehaviour {
 
-	public	float	Duration=2f;
 	public	float	Speed=4f;
 
 	void	Awake() {
 		gameObject.SetActive (false);		//Don't show yet
 	}
 
-	public	void	Fire(Vector3 tSpeed) {
+	public	void	Fire(Vector3 tSpeed,float vTimeToLive=1f) {
 		gameObject.SetActive (true);
 		GetComponent<Rigidbody2D> ().velocity = tSpeed*Speed;
-		Destroy (gameObject, Duration);		//Self Destruct
+		Destroy (gameObject, vTimeToLive);		//Self Destruct
 	}
 	void OnTriggerEnter2D(Collider2D vOther) {   //Must use 2D version
 		Asteroid tA=vOther.gameObject.GetComponent<Asteroid>();

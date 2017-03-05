@@ -3,6 +3,8 @@ using System.Collections;
 
 public class Asteroid : MonoBehaviour {
 
+
+
 	[HideInInspector]		//Don't show as its set in code
 	public	GM.AsteroidSize mSize;
 
@@ -11,67 +13,50 @@ public class Asteroid : MonoBehaviour {
 	//Set up start position
 	void Start () {
 		mRB = GetComponent<Rigidbody2D>(); //Get RB component from GameObject
-		if (mSize == GM.AsteroidSize.SuperAsteroid) {
-			mRB.constraints = RigidbodyConstraints2D.FreezeRotation;
-		}
-		RandomMove ();
+		RandomMove ();		//Give Asteroid a random direction
 	}
 
+
+	//Random rotation & velocity
 	public	void	RandomMove() {
-		if (mSize == GM.AsteroidSize.SuperAsteroid) {
-			mRB.velocity = Quaternion.Euler(0,0,Random.Range(0,360f))* Vector2.up*2f;	//Random move
-		} else {
-			mRB.angularVelocity = Random.Range(-360f,360f);	//Random rotation
-			mRB.velocity = Quaternion.Euler(0,0,Random.Range(0,360f))* Vector2.up;	//Random move
-		}
+		mRB.angularVelocity = Random.Range(-360f,360f);	//Random rotation
+		mRB.velocity = Quaternion.Euler(0,0,Random.Range(0,360f))* Vector2.up;	//Random move
 	}
 
-    #region Collision
+    #region Collision	//Deal with player collisions
     void OnTriggerEnter2D(Collider2D vOther) {   //Must use 2D version
 		PlayerShip tSP=vOther.gameObject.GetComponent<PlayerShip>();
-		if (tSP) {
+		if (tSP) {		//If asteroid hits player, tell Asteroid to split
 			Split ();
-			GM.CreateExplosion (GM.PlayerShip.transform.position);
-			GM.PlayerShip.Die ();
+			GM.CreateExplosion (GM.PlayerShip.transform.position);		//Create explosion effect
+			GM.PlayerShip.Die ();		//Destroy player ship
 		}
     }
 
 
-	public	void	Split() {		//Simple state machine
+	public	void	Split() {		//Simple state machine, allows Asteroids to split to smaller ones & eventually die
 		switch (mSize) {
 		case	GM.AsteroidSize.Big:
-			if (Random.Range (0, 10) < 5) {
-				GM.CreateAsteroid (transform.position, GM.AsteroidSize.SuperAsteroid);		//Super
-				Destroy (gameObject);
-				GM.CreateExplosion (transform.position);
-			} else {
-				GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);		//Make 2 medium ones and kill big one
-				GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);
-				Destroy (gameObject);
-				GM.CreateExplosion (transform.position);
-			}
-			return;
-		case	GM.AsteroidSize.Medium:
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
-			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
-			GM.CreateExplosion (transform.position);
+			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);		//Make 2 medium ones and kill original one
+			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Medium);
 			Destroy (gameObject);
-			return;
-		case	GM.AsteroidSize.Small:
 			GM.CreateExplosion (transform.position);
+			break;
+		case	GM.AsteroidSize.Medium:			//Make 3 small ones and kill original one
+			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
+			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
+			GM.CreateAsteroid (transform.position, GM.AsteroidSize.Small);
 			Destroy (gameObject);
-			return;
-
-		case	GM.AsteroidSize.SuperAsteroid:
-			GM.PlayerShip.Lives++;			
+			GM.CreateExplosion (transform.position);
+			break;
+		case	GM.AsteroidSize.Small:		//Small Asteroid just dies
 			GM.CreateExplosion (transform.position);
 			Destroy (gameObject);
 			break;
 		}
 	}
 
-	public	int	Score {
+	public	int	Score {			//Return the score for this kind of asteroid
 		get {
 			switch (mSize) {
 			case	GM.AsteroidSize.Big:
@@ -86,8 +71,5 @@ public class Asteroid : MonoBehaviour {
 		}
 	}
 
-    void OnCollisionEnter2D(Collision2D vOther) {
-    }
     #endregion
-
 }

@@ -14,7 +14,7 @@ public class PlayerScore : MonoBehaviour {
 	
     IEnumerator UpdateScore() {     //This CoRoutine will run in the background updating the score from the player every 1/2 second
         do {
-            if(GM.PlayerShip!=null && mText.Length==3) {
+            if(GM.PlayerShip!=null && mText.Length>=3) {
 				mText[0].text = string.Format("Asteroids {0}",GM.AsteroidCount);
 				mText[1].text = string.Format("Lives {0}", GM.PlayerShip.Lives);
 				mText[2].text = string.Format("Score {0}", GM.PlayerShip.Score);

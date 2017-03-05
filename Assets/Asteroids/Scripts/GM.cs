@@ -11,7 +11,6 @@ public class GM : Singleton {
         Big=0
         ,Medium
         ,Small
-		,SuperAsteroid	//New Asteroid type
         ,None
     }
 
@@ -19,6 +18,8 @@ public class GM : Singleton {
 	public GameObject 	ExplosionPrefab;
 	public GameObject 	BulletPrefab;
     public GameObject[] AsteroidPrefabs;
+
+	public	Toggle		CheatToggle;
 
     #endregion
 
@@ -57,11 +58,14 @@ public class GM : Singleton {
     public static void    RegisterPlayerShip(PlayerShip vPS) {
 		GameOver = false;
         sGM.mPlayerShip = vPS;
+    }
+
+	public	static	void	NewAsteroids() {
 		for (int tI = 0; tI < 3; tI++) {
 			Vector3	tPosition=Quaternion.Euler(0,0,Random.Range(0,360))* Vector3.up;		//Random position 1 unit away
-			CreateAsteroid (tPosition+vPS.transform.position, AsteroidSize.Big);
+			CreateAsteroid (tPosition+sGM.mPlayerShip.transform.position, AsteroidSize.Big);
 		}
-    }
+	}
 	
     #endregion
 
@@ -77,11 +81,11 @@ public class GM : Singleton {
 		}
     }
 
-	public  static  void    CreateBullet(Vector3 tPosition,Vector3 vVelocity) {
+	public  static  void    CreateBullet(Vector3 tPosition,Vector3 vVelocity, float vTimeToLive=1f) {
 		GameObject	tGO = Instantiate (GM.sGM.BulletPrefab);		//Makes a GameObject from prefab
 		Bullet	tmBullet = tGO.GetComponent<Bullet> ();
 		tmBullet.transform.position = tPosition;
-		tmBullet.Fire (vVelocity);
+		tmBullet.Fire (vVelocity,vTimeToLive);
 	}
 	public  static  void    CreateExplosion(Vector3 tPosition) {
 		GameObject	tGO = Instantiate (GM.sGM.ExplosionPrefab);		//Makes a GameObject from prefab
@@ -97,6 +101,24 @@ public class GM : Singleton {
 		}
 	}
 
+	public	static	bool	Cheat {		//Are we in cheat mode?
+		get {
+			if (sGM.CheatToggle != null) {
+				return	sGM.CheatToggle.isOn;
+			}
+			return	false;
+		}
+	}
+
+	public	bool	CheckPlayerWin() {
+		if (AsteroidCount > 0) {
+			return	false;
+		} else {
+			GM.NewAsteroids ();
+			return	true;
+		}
+	}
+		
     #endregion
 	
 }

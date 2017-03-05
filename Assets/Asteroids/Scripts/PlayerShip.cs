@@ -10,12 +10,17 @@ public class PlayerShip : MonoBehaviour {
     public 	float Speed = 20.0f;
 	[Range(0, 3f)]
 	public 	float BulletSpeed = 1.0f;
+	[Range(0, 3f)]
+	public 	float BulletTimeToLive = 1.0f;
 
 	bool	mActive=false;
 
 	public	GameObject	BulletSpawn;
 
     #region Score
+
+	SpriteRenderer	mSR;
+	Collider2D		mCOL;
 
 	Vector3	mStartPosition;
 
@@ -43,31 +48,43 @@ public class PlayerShip : MonoBehaviour {
 	}
 
 	public	void	Die() {
-		Show (false);
-		if (mLives > 0) {
-			mLives--;
-			Invoke ("ReSpawn", 2f);	//Show ship again
+		if (GM.Cheat) {
+			GetComponent<SpriteRenderer> ().color = Color.red;		//Show cheat mode is active by making ship red
 		} else {
-			GM.GameOver = true;
+			Show (false);
+			if (mLives > 0) {
+				mLives--;
+				Invoke ("ReSpawn", 2f);	//Show ship again
+			} else {
+				GM.GameOver = true;
+			}
 		}
 	}
 
 
 	void	Show(bool vShow) {		//Show or hide ship
 		mActive=vShow;
-		GetComponent<SpriteRenderer> ().enabled = vShow;
-		GetComponent<Collider2D> ().enabled = vShow;
+		mSR.enabled = vShow;
+		mCOL.enabled = vShow;
 	}
 
     void Start() {
         GM.RegisterPlayerShip(this);        //Register ship with Game Manager
         mRB = GetComponent<Rigidbody2D>(); //Get RB component from GameObject
+		mSR=GetComponent<SpriteRenderer>();	//Cache key components for fast reuse
+		mCOL = GetComponent<Collider2D> ();
         mRB.gravityScale = 0f;      //Turn gravity "off"
 		mStartPosition=transform.position;
 		Show (true);
+		Invoke ("ReStartGame",2f);
     }
 
+	void	ReStartGame() {		//Called to spawn new Asteroids
+		GM.NewAsteroids ();
+	}
+
 	void	ReSpawn() {
+		mSR.color = Color.white;		//Turn ship white again
 		mRB.velocity = Vector2.zero;
 		transform.position=mStartPosition;
 		transform.rotation = Quaternion.identity;
@@ -82,7 +99,7 @@ public class PlayerShip : MonoBehaviour {
     void FixedUpdate() {
 		if (mActive) {
 			
-			if (Input.GetKey (KeyCode.LeftArrow)) {      //Rotate ship, coudl use torque, but this looks better
+			if (Input.GetKey (KeyCode.LeftArrow)) {      //Rotate ship, could use torque, but this looks better
 				mRB.MoveRotation (mRB.rotation + (RotationSpeed * Time.deltaTime));
 			}
 			if (Input.GetKey (KeyCode.RightArrow)) {
@@ -93,7 +110,7 @@ public class PlayerShip : MonoBehaviour {
 				mRB.AddForce (tForce);
 			}
 			if (CoolDown () && Input.GetKey (KeyCode.Space)) {
-				GM.CreateBullet (BulletSpawn.transform.position, (BulletSpawn.transform.position - transform.position).normalized * BulletSpeed);
+				GM.CreateBullet (BulletSpawn.transform.position, (BulletSpawn.transform.position - transform.position).normalized * BulletSpeed,BulletTimeToLive);
 			}
 		}
     }
