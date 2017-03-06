@@ -53,14 +53,18 @@ public class GM : Singleton {
 		,SpawnAsteroids
 		,WaitPlayerSafe
 		,PlayLevel
+		,ReSpawnAsteroids
+		,PlayerLifeLost
+		,PlayerNewLife
 		,PlayerDead
 		,GameOver
 		,WaitGameOver
 		,AsteroidsGone
 	}
 
-	State	mCurrentState=State.Invalid;
+	State	mCurrentState=State.Invalid;		//Set Invalid
 
+	//Updates current state calling Exit & Enter 
 	public	static	State	CurrentState {
 		get {
 			return	sGM.mCurrentState;
@@ -75,6 +79,8 @@ public class GM : Singleton {
 		}
 	}
 
+
+	//Called when a state in exited
 	void	ExitState(State vState) {
 		switch (vState) {
 
@@ -95,6 +101,8 @@ public class GM : Singleton {
 		}
 	}
 
+
+	//Called when a state in entered
 	void	EnterState(State vState) {
 		switch (vState) {
 
@@ -111,6 +119,12 @@ public class GM : Singleton {
 			StartCoroutine(InputStateChange(KeyCode.Space,State.SpawnAsteroids));
 			return;
 
+		case State.ReSpawnAsteroids:
+			DeleteBullets ();
+			NewAsteroids (PlayerShip.transform.position);
+			StartCoroutine(TimedStateChange(1f,State.WaitPlayerSafe));
+			return;
+
 		case State.SpawnAsteroids:
 			NewAsteroids ();
 			StartCoroutine(TimedStateChange(1f,State.WaitPlayerSafe));
@@ -118,6 +132,19 @@ public class GM : Singleton {
 
 		case State.PlayLevel:
 			PlayerShip.Show (true);
+			return;
+
+		case State.PlayerLifeLost:
+			StartCoroutine(TimedStateChange(5f,State.PlayerNewLife));
+			return;
+
+		case State.PlayerNewLife:
+			if (PlayerShip.Lives == 0) {
+				CurrentState = State.PlayerDead;
+			} else {
+				PlayerShip.ReSpawn ();
+				CurrentState = State.PlayLevel;
+			}
 			return;
 
 		case	State.PlayerDead:
@@ -134,6 +161,8 @@ public class GM : Singleton {
 		ProcessState (CurrentState);
 	}
 
+
+	//This is called in Update to proess State
 	void	ProcessState(State vState) {
 		switch (vState) {
 
@@ -144,8 +173,8 @@ public class GM : Singleton {
 			return;
 
 		case	State.PlayLevel:
-			if (PlayerShip.Lives == 0) {
-				CurrentState=State.PlayerDead;
+			 if (AsteroidCount == 0) {
+				CurrentState = State.ReSpawnAsteroids;
 			}
 			return;
 
@@ -180,11 +209,16 @@ public class GM : Singleton {
         }
     }
 
-	public	static	void	NewAsteroids() {
-		for (int tI = 0; tI < 3; tI++) {
-			Vector3	tPosition=Quaternion.Euler(0,0,Random.Range(0,360))* Vector3.up;		//Random position 1 unit away
-			CreateAsteroid (tPosition+sGM.mPlayerShip.transform.position, Asteroid.AsteroidSize.Big);
+	public	static	void	NewAsteroids(Vector3 vOrigin,int vCount=3) {
+		for (int tI = 0; tI < vCount; tI++) {
+			Vector3	tPositionOnRadius=Quaternion.Euler(0,0,Random.Range(0,360))* Vector3.up*2f;		//Random position 2 units radius from center
+			CreateAsteroid (tPositionOnRadius+vOrigin, Asteroid.AsteroidSize.Big);
 		}
+
+	}
+	public	static	void	NewAsteroids(int vCount=3) {
+		Vector3	tOrigin = Vector3.zero;
+		NewAsteroids (tOrigin, vCount);
 	}
 	
     #endregion
@@ -204,7 +238,7 @@ public class GM : Singleton {
 		return	true;
 	}
 
-
+	//Create an Asteroid from a prefab
 	public  static  void    CreateAsteroid(Vector3 tPosition,Asteroid.AsteroidSize vSize) {
 		int	tIndex = (int)vSize;		//Converts enum to int (safe)
 		if (tIndex < GM.sGM.AsteroidPrefabs.Length) {		//Make sure we have sufficent prefabs
@@ -215,12 +249,7 @@ public class GM : Singleton {
 		}
     }
 
-	public  static  void    CreateBullet(Vector3 tPosition,Vector3 vVelocity, float vTimeToLive=1f) {
-		GameObject	tGO = Instantiate (GM.sGM.BulletPrefab);		//Makes a GameObject from prefab
-		Bullet	tmBullet = tGO.GetComponent<Bullet> ();
-		tmBullet.transform.position = tPosition;
-		tmBullet.Fire (vVelocity,vTimeToLive);
-	}
+	//Simple Particle explosion
 	public  static  void    CreateExplosion(Vector3 tPosition) {
 		GameObject	tGO = Instantiate (GM.sGM.ExplosionPrefab);		//Makes a GameObject from prefab
 		tGO.transform.position=tPosition;			//Place it where asteroid splits
@@ -244,14 +273,25 @@ public class GM : Singleton {
 		}
 	}
 
-	public	bool	CheckPlayerWin() {
-		if (AsteroidCount > 0) {
-			return	false;
-		} else {
-			GM.NewAsteroids ();
-			return	true;
+
+	#endregion
+
+	#region Bullets
+
+	public	static	void	DeleteBullets() {
+		Bullet[] tBullets = FindObjectsOfType<Bullet> ();
+		foreach (var tBullet in tBullets) {
+			Destroy (tBullet.gameObject);
 		}
 	}
+
+	public  static  void    CreateBullet(Vector3 tPosition,Vector3 vVelocity, float vTimeToLive=1f) {
+		GameObject	tGO = Instantiate (GM.sGM.BulletPrefab);		//Makes a GameObject from prefab
+		Bullet	tmBullet = tGO.GetComponent<Bullet> ();
+		tmBullet.transform.position = tPosition;
+		tmBullet.Fire (vVelocity,vTimeToLive);
+	}
+
 		
     #endregion
 	

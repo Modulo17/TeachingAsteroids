@@ -13,21 +13,14 @@ public class PlayerShip : MonoBehaviour {
 	[Range(0, 3f)]
 	public 	float BulletTimeToLive = 1.0f;
 
-	bool	mActive=false;
 
 	public	GameObject	BulletSpawn;
 
     #region Score
 
-	SpriteRenderer	mSR;
-	Collider2D		mCOL;
 
-	Vector3	mStartPosition;
-
-    int mScore = 0;     //Keep score private
-
-	int	mLives = 4;
-
+	//Access Score
+	int mScore = 0;     //Keep score private
     public int Score {
            get {
             return mScore;
@@ -37,6 +30,8 @@ public class PlayerShip : MonoBehaviour {
 		}
     }
 
+	//Access Lives
+	int	mLives = 4;
 	public	int Lives {
 		get {
 			return	mLives;
@@ -51,13 +46,23 @@ public class PlayerShip : MonoBehaviour {
 		if (GM.Cheat) {
 			GetComponent<SpriteRenderer> ().color = Color.red;		//Show cheat mode is active by making ship red
 		} else {
-			Show (false);
 			if (mLives > 0) {
 				mLives--;
-				Invoke ("ReSpawn", 2f);	//Show ship again
 			} 
+			GM.CurrentState = GM.State.PlayerLifeLost;
 		}
 	}
+
+	#endregion
+
+
+	#region Player
+
+	bool	mActive=false;
+	SpriteRenderer	mSR;
+	Collider2D		mCOL;
+
+	Vector3	mStartPosition;
 
 
 	public	void	Show(bool vShow) {		//Show or hide ship

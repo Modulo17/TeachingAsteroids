@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class PlayerScore : MonoBehaviour {
 
+
+	[Header("Link Prefabs")]
 	public	Text	AsteroidCountText;
 	public	Text	ShipCountText;
 	public	Text	StateText;
@@ -23,6 +25,9 @@ public class PlayerScore : MonoBehaviour {
         StartCoroutine(UpdateScore());  //Run CoRoutine in background
 	}
 
+
+	#region SpecialEventScreens
+
 	public	bool	GameOver {
 		set {
 			GameOverScreen.SetActive (value);
@@ -39,6 +44,7 @@ public class PlayerScore : MonoBehaviour {
 			IntroScreen.SetActive (value);
 		}
 	}
+	#endregion
 
     IEnumerator UpdateScore() {     //This CoRoutine will run in the background updating the score from the player every 1/2 second
         do {
