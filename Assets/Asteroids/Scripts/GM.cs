@@ -32,7 +32,7 @@ public class GM : Singleton {
     }
     #endregion
 
-	#region States
+	#region StateMachine
 
 	PlayerScore	mPS;
 
@@ -47,19 +47,18 @@ public class GM : Singleton {
 
 	public	enum State {
 		Invalid
-		,None
-		,ShowIntro
-		,WaitIntro
-		,SpawnAsteroids
-		,WaitPlayerSafe
-		,PlayLevel
-		,ReSpawnAsteroids
-		,PlayerLifeLost
-		,PlayerNewLife
-		,PlayerDead
-		,GameOver
-		,WaitGameOver
-		,AsteroidsGone
+		,None			//Initial state
+		,ShowIntro		//Will Show Intro on state entry
+		,WaitIntro		//Waiting on Player
+		,SpawnAsteroids		//Start game by spawning initial Asteroids
+		,WaitPlayerSafe		//Wait until player is safe
+		,PlayLevel			//Actually playing a level
+		,ReSpawnAsteroids	//More Asteroids needed
+		,PlayerLifeLost		//Player Lost a life
+		,PlayerNewLife		//Player gets new life
+		,PlayerDead			//Player has run out of lives and died
+		,GameOver			//Show Game Over
+		,WaitGameOver		//Wait for player
 	}
 
 	State	mCurrentState=State.Invalid;		//Set Invalid
@@ -107,7 +106,7 @@ public class GM : Singleton {
 		switch (vState) {
 
 		case	State.None:
-			StartCoroutine(TimedStateChange(1f,State.ShowIntro));
+			TriggerChange (State.ShowIntro, 1f);
 			return;
 
 		case	State.ShowIntro:
@@ -116,26 +115,27 @@ public class GM : Singleton {
 			return;
 
 		case	State.WaitIntro:
-			StartCoroutine(InputStateChange(KeyCode.Space,State.SpawnAsteroids));
+			TriggerChange (State.SpawnAsteroids, KeyCode.Space);
 			return;
 
-		case State.ReSpawnAsteroids:
+		case State.ReSpawnAsteroids:		//Used to make more during game
 			DeleteBullets ();
 			NewAsteroids (PlayerShip.transform.position);
-			StartCoroutine(TimedStateChange(1f,State.WaitPlayerSafe));
+			TriggerChange (State.WaitPlayerSafe, 1f);
 			return;
 
-		case State.SpawnAsteroids:
+		case State.SpawnAsteroids:		//Initial asteroids
+			DeleteBullets ();
 			NewAsteroids ();
-			StartCoroutine(TimedStateChange(1f,State.WaitPlayerSafe));
+			TriggerChange (State.WaitPlayerSafe, 1f);
 			return;
 
-		case State.PlayLevel:
+		case State.PlayLevel:		//Changing from this state is controlled using DuringState()
 			PlayerShip.Show (true);
 			return;
 
 		case State.PlayerLifeLost:
-			StartCoroutine(TimedStateChange(5f,State.PlayerNewLife));
+			TriggerChange (State.PlayerNewLife, 5f);
 			return;
 
 		case State.PlayerNewLife:
@@ -149,7 +149,7 @@ public class GM : Singleton {
 
 		case	State.PlayerDead:
 			PS.GameOver = true;
-			StartCoroutine(TimedStateChange(5f,State.WaitGameOver));
+			TriggerChange (State.WaitGameOver, 5f);
 			return;
 
 		default:
@@ -157,13 +157,15 @@ public class GM : Singleton {
 		}
 	}
 
+
+	//Handle update, here we process the Druing states
 	void	Update() {
-		ProcessState (CurrentState);
+		DuringState (CurrentState);
 	}
 
 
-	//This is called in Update to proess State
-	void	ProcessState(State vState) {
+	//This is called in Update to process State
+	void	DuringState(State vState) {
 		switch (vState) {
 
 		case	State.WaitPlayerSafe:
@@ -182,21 +184,46 @@ public class GM : Singleton {
 			return;
 		}
 	}
-	#endregion
 
+	//Some helpers to call CoRoutine with correct parameters
+
+	//Trigger state change after time has ellapsed
+	public	void	TriggerChange(State vNewState,float vTime) {
+		StartCoroutine(StateChangeCoRoutine(vNewState,vTime,0));		//Use zero key, so its ignored
+	}
+
+	//Trigger state change when key is pressed 
+	public	void	TriggerChange(State vNewState,KeyCode vKey) {
+		StartCoroutine(StateChangeCoRoutine(vNewState,-1f,vKey));		//Use negative time , so its ignored
+	}
+
+	//Trigger state change when key is pressed or timeout
+	public	void	TriggerChange(State vNewState,float vTime, KeyCode vKey) {
+		StartCoroutine(StateChangeCoRoutine(vNewState,vTime,vKey));		//Use Key and time
+	}
+		
 	//Trigger state change after timeout
-	IEnumerator	TimedStateChange(float vTime, State vNewState) {
-		yield	return	new	WaitForSeconds (vTime);
-		CurrentState = vNewState;
+	IEnumerator	StateChangeCoRoutine(State vNewState,float vTime, KeyCode vKey) {
+		bool	tTrigger = false;
+		do {
+			if(vKey!=0) {		//If Key is zero ignore it
+				if(Input.GetKey(vKey)) {
+					tTrigger=true;
+				}
+			}
+			if(vTime>0f) {		//If Time is negative zero coming in ignore it
+				vTime-=Time.deltaTime;	//New TimeSlice
+				if(vTime<=0f) {		//Have we triggered
+					vTime=0f;
+					tTrigger=true;
+				}
+			}
+			yield	return null;
+		} while(!tTrigger);
+		CurrentState = vNewState;	//Go to New State
 	}
 
-	//Trigger state change if key pressed
-	IEnumerator	InputStateChange(KeyCode vKey, State vNewState) {
-		while(!Input.GetKey(vKey)) {
-			yield	return null;
-		}
-		CurrentState = vNewState;
-	}
+	#endregion
 
 
     #region Player
@@ -227,15 +254,15 @@ public class GM : Singleton {
 
 
 	//Is player ship safe, ie no asteroids near the player
-	public bool	IsPlayerSafe (Vector3 vPlayerPosition) {
-		Asteroid[] tAsteroids = FindObjectsOfType<Asteroid> ();
+	public bool	IsPlayerSafe (Vector3 vPlayerPosition,float vRadius=1.5f) {
+		Asteroid[] tAsteroids = FindObjectsOfType<Asteroid> ();	//Look for Asteroid which are too close
 		foreach (var tAsteroid in tAsteroids) {
 			Vector2	tPosition = (Vector2)vPlayerPosition - (Vector2)tAsteroid.transform.position;
-			if (tPosition.magnitude < 2f) {
+			if (tPosition.magnitude < vRadius) {
 				return false;	//Too Close
 			}
 		}
-		return	true;
+		return	true;	//We are good to go
 	}
 
 	//Create an Asteroid from a prefab
