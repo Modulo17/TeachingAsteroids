@@ -59,6 +59,7 @@ public class GM : Singleton {
 		,PlayerDead			//Player has run out of lives and died
 		,GameOver			//Show Game Over
 		,WaitGameOver		//Wait for player
+		,WarpPlayer			//Player Warp
 	}
 
 	State	mCurrentState=State.Invalid;		//Set Invalid
@@ -152,6 +153,12 @@ public class GM : Singleton {
 			TriggerChange (State.WaitGameOver, 5f);
 			return;
 
+		case	State.WarpPlayer:
+			PlayerShip.Warp ();
+			TriggerChange (State.PlayLevel, 1f);
+
+			return;
+
 		default:
 			return;
 		}
@@ -164,6 +171,16 @@ public class GM : Singleton {
 	}
 
 
+	public	int	mCounter;
+	public	static	int	Counter {
+		get {
+			return	sGM.mCounter;
+		}
+		set {
+			sGM.mCounter = value;
+		}
+	}
+
 	//This is called in Update to process State
 	void	DuringState(State vState) {
 		switch (vState) {
@@ -175,11 +192,16 @@ public class GM : Singleton {
 			return;
 
 		case	State.PlayLevel:
-			 if (AsteroidCount == 0) {
+			if (AsteroidCount == 0) {
 				CurrentState = State.ReSpawnAsteroids;
 			}
+			if (Counter > 10) {
+				if (Random.Range (0, 100f) < 10f) {
+					Counter = 0;
+					GM.CreateAsteroid (Vector3.zero, Asteroid.AsteroidSize.Spaceship);
+				}
+			}
 			return;
-
 		default:
 			return;
 		}
@@ -284,6 +306,8 @@ public class GM : Singleton {
 	}
 
 
+
+
 	public	static	int	AsteroidCount {
 		get {
 			Asteroid[] tAsteroids = FindObjectsOfType<Asteroid> ();
@@ -319,7 +343,12 @@ public class GM : Singleton {
 		tmBullet.Fire (vVelocity,vTimeToLive);
 	}
 
-		
+	public	static	Vector2	ScreenSize {
+		get {
+			return	new Vector2 (Camera.main.aspect * Camera.main.orthographicSize, Camera.main.orthographicSize);
+		}
+	}
+
     #endregion
 	
 }

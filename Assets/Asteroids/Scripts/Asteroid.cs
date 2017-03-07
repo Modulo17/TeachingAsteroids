@@ -58,6 +58,11 @@ public class Asteroid : MonoBehaviour {
 			break;
 		case	AsteroidSize.Small:		//Small Asteroid just dies
 			GM.CreateExplosion (transform.position);
+			GM.Counter++;
+			Destroy (gameObject);
+			break;
+		case	AsteroidSize.Spaceship:		//Spaceship
+			GM.CreateExplosion (transform.position);
 			Destroy (gameObject);
 			break;
 		}

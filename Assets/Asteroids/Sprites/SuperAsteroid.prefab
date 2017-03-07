@@ -22,8 +22,8 @@ GameObject:
   - 212: {fileID: 212000010978335796}
   - 50: {fileID: 50000012630352896}
   - 114: {fileID: 114000012553946932}
-  - 114: {fileID: 114000010426424866}
   - 61: {fileID: 61000010380989688}
+  - 114: {fileID: 114000013047765486}
   m_Layer: 0
   m_Name: SuperAsteroid
   m_TagString: Untagged
@@ -60,7 +60,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &61000010380989688
 BoxCollider2D:
   m_ObjectHideFlags: 1
@@ -75,17 +75,6 @@ BoxCollider2D:
   m_Offset: {x: 0.000000029802322, y: 0.008769155}
   serializedVersion: 2
   m_Size: {x: 0.45572782, y: 0.2803507}
---- !u!114 &114000010426424866
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012892852978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b7e420f7d9d5fe4088d4da15330a159, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114000012553946932
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -98,6 +87,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mSize: 0
+--- !u!114 &114000013047765486
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012892852978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83bbc6c3ebf9d4dbb8a0a5cfcbadec7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &212000010978335796
 SpriteRenderer:
   m_ObjectHideFlags: 1

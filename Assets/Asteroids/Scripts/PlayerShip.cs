@@ -80,6 +80,12 @@ public class PlayerShip : MonoBehaviour {
 		Show (false);
     }
 
+	public	void	Warp() {
+		Vector2	vPosition = new Vector2 (Random.Range (-GM.ScreenSize.x, GM.ScreenSize.x), Random.Range (-GM.ScreenSize.y, GM.ScreenSize.y));
+		mRB.velocity = Vector2.zero;
+		transform.position=vPosition;
+		transform.rotation = Quaternion.identity;
+	}
 
 	public	void	ReSpawn() {
 		mSR.color = Color.white;		//Turn ship white again
@@ -96,7 +102,6 @@ public class PlayerShip : MonoBehaviour {
     //For Physics we use Fixed Update	
     void FixedUpdate() {
 		if (mActive) {
-			
 			if (Input.GetKey (KeyCode.LeftArrow)) {      //Rotate ship, could use torque, but this looks better
 				mRB.MoveRotation (mRB.rotation + (RotationSpeed * Time.deltaTime));
 			}
@@ -109,6 +114,11 @@ public class PlayerShip : MonoBehaviour {
 			}
 			if (CoolDown () && Input.GetKey (KeyCode.Space)) {
 				GM.CreateBullet (BulletSpawn.transform.position, (BulletSpawn.transform.position - transform.position).normalized * BulletSpeed,BulletTimeToLive);
+			}
+			if (Input.GetKey (KeyCode.W)) {      //Warp
+				if (GM.CurrentState == GM.State.PlayLevel) {
+					GM.CurrentState = GM.State.WarpPlayer;
+				}
 			}
 		}
     }
