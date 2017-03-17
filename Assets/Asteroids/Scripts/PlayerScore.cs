@@ -10,6 +10,7 @@ public class PlayerScore : MonoBehaviour {
 	public	Text	ShipCountText;
 	public	Text	StateText;
 	public	Text	ScoreText;
+	public	Text	LevelText;
 
 	public	GameObject	GameOverScreen;
 	public	GameObject	HighScoreScreen;
@@ -48,19 +49,20 @@ public class PlayerScore : MonoBehaviour {
 
     IEnumerator UpdateScore() {     //This CoRoutine will run in the background updating the score from the player every 1/2 second
         do {
-			AsteroidCountText.text = string.Format("Asteroids {0}",GM.AsteroidCount);
+			AsteroidCountText.text = string.Format("Rocks:{0}",GM.AsteroidCount);
 			if(GM.PlayerShip!=null) {
-				ShipCountText.text = string.Format("Lives {0}", GM.PlayerShip.Lives);
+				ShipCountText.text = string.Format("Lives:{0}", GM.PlayerShip.Lives);
 			} else {
 				ShipCountText.text = "No ship";
 			}
-			StateText.text = string.Format("State {0}", GM.CurrentState);
+			StateText.text = string.Format("{0}", GM.CurrentState);
 			if(GM.PlayerShip!=null) {
-				ScoreText.text = string.Format("Score {0}", GM.PlayerShip.Score);
+				ScoreText.text = string.Format("Score:{0}", GM.PlayerShip.Score);
 			} else {
 				ScoreText.text="";
 			}
-            yield return new    WaitForSeconds(0.5f);       //Show score update every 0.5 seconds
+			LevelText.text = string.Format("Level:{0}",GM.Level);
+            yield return new    WaitForSeconds(0.15f);       //Show score update every 0.5 seconds
         } while (true);     //Loop forwever
     }
 }

@@ -31,7 +31,7 @@ public class PlayerShip : MonoBehaviour {
     }
 
 	//Access Lives
-	int	mLives = 4;
+	int	mLives = 0;
 	public	int Lives {
 		get {
 			return	mLives;
@@ -45,11 +45,12 @@ public class PlayerShip : MonoBehaviour {
 	public	void	Die() {
 		if (GM.Cheat) {
 			GetComponent<SpriteRenderer> ().color = Color.red;		//Show cheat mode is active by making ship red
+			GM.CheatCount++;
 		} else {
 			if (mLives > 0) {
 				mLives--;
 			} 
-			GM.CurrentState = GM.State.PlayerLifeLost;
+			GM.TriggerChange(GM.State.PlayerLifeLost);
 		}
 	}
 
@@ -117,7 +118,7 @@ public class PlayerShip : MonoBehaviour {
 			}
 			if (Input.GetKey (KeyCode.W)) {      //Warp
 				if (GM.CurrentState == GM.State.PlayLevel) {
-					GM.CurrentState = GM.State.WarpPlayer;
+					GM.TriggerChange(GM.State.WarpPlayer);
 				}
 			}
 		}

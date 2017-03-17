@@ -46,6 +46,7 @@ public class Asteroid : MonoBehaviour {
 		case	AsteroidSize.Big:
 			GM.CreateAsteroid (transform.position, AsteroidSize.Medium);		//Make 2 medium ones and kill original one
 			GM.CreateAsteroid (transform.position, AsteroidSize.Medium);
+			GM.AsteroidHitCount++;
 			Destroy (gameObject);
 			GM.CreateExplosion (transform.position);
 			break;
@@ -53,16 +54,19 @@ public class Asteroid : MonoBehaviour {
 			GM.CreateAsteroid (transform.position, AsteroidSize.Small);
 			GM.CreateAsteroid (transform.position, AsteroidSize.Small);
 			GM.CreateAsteroid (transform.position, AsteroidSize.Small);
+			GM.AsteroidHitCount++;
 			Destroy (gameObject);
 			GM.CreateExplosion (transform.position);
 			break;
 		case	AsteroidSize.Small:		//Small Asteroid just dies
 			GM.CreateExplosion (transform.position);
 			GM.Counter++;
+			GM.AsteroidHitCount++;
 			Destroy (gameObject);
 			break;
 		case	AsteroidSize.Spaceship:		//Spaceship
 			GM.CreateExplosion (transform.position);
+			GM.UFOHitCount++;
 			Destroy (gameObject);
 			break;
 		}
