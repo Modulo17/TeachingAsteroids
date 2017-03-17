@@ -110,7 +110,7 @@ public class GM : Singleton {
 		PlayerShip.Lives = 3;		//reset counters
 		PlayerShip.Score = 0;
 		mPlayTime = 0f;
-		mLevel = 0;
+		mLevel = 1;
 		mAsteroidHitCount = 0;
 		mBulletCount = 0;
 		mUFOCount = 0;
@@ -133,8 +133,8 @@ public class GM : Singleton {
 
 		case State.NewGame:
 			NewGameResetVariables ();
+			mGameCount++;
 			NewAsteroids ();
-			LogGameStateEvent();
 			TriggerChange (State.ShowIntro, 3f);
 			break;
 
@@ -223,8 +223,8 @@ public class GM : Singleton {
 
 		case	State.PlayLevel:
 			if (AsteroidCount == 0) {
-				CurrentState = State.SpawnAsteroids;
 				mLevel++;
+				CurrentState = State.SpawnAsteroids;
 			}
 			if (Counter > 10) {
 				if (Random.Range (0, 100f) < 10f) {
@@ -414,6 +414,8 @@ public class GM : Singleton {
 
 	#region Analytics
 
+	public	int	mGameCount = 0;
+
 	public	float	mPlayTime=0f;
 	public	int		mLevel=0;
 	static	public	int		Level {
@@ -469,6 +471,7 @@ public class GM : Singleton {
 	static	public	void	LogGameEvent(string vEvent) {
 		StringBuilder tSB = new StringBuilder ();
 		Dictionary<string,object>	tDetail = new Dictionary<string,object> ();
+		tDetail.Add("Game",string.Format("Game{0}",sGM.mGameCount));
 		tDetail.Add("Level",string.Format("Level{0}",sGM.mLevel));
 		tDetail.Add("Playtime",sGM.mPlayTime);
 		tDetail.Add("BulletCount",sGM.mBulletCount);
