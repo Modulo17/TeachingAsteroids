@@ -300,12 +300,11 @@ public class GM : Singleton {
 			Vector3	tPositionOnRadius=Quaternion.Euler(0,0,Random.Range(0,360))* Vector3.up*2f;		//Random position 2 units radius from center
 			CreateAsteroid (tPositionOnRadius+vOrigin, Asteroid.AsteroidSize.Big);
 		}
-
-	}
+    }
 	public	static	void	NewAsteroids() {
 		int	tCount;
 		if (sGM.mLevel < 4) {
-			tCount = sGM.mLevel + 3;
+			tCount = sGM.mLevel + 1;
 		} else {
 			tCount = 7;
 		}
@@ -478,7 +477,7 @@ public class GM : Singleton {
 		tDetail.Add("AsteroidHitCount",sGM.mAsteroidHitCount);
 		tDetail.Add("CheatTime",sGM.mCheatTime);
 		tDetail.Add("Asteroids",AsteroidCount);
-		//Analytics.CustomEvent (vEvent, tDetail);
+		Analytics.CustomEvent (vEvent, tDetail);
 		tSB.AppendFormat ("Event:{0}",vEvent);
 		foreach (var tItem in tDetail) {
 			tSB.AppendFormat (" {0}",tItem.ToString());
