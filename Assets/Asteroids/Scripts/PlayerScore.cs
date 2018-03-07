@@ -6,7 +6,7 @@ public class PlayerScore : MonoBehaviour {
 
 
 	[Header("Link Prefabs")]
-	public	Text	AsteroidCountText;
+	public	Image	DataSync;
 	public	Text	ShipCountText;
 	public	Text	StateText;
 	public	Text	ScoreText;
@@ -49,7 +49,6 @@ public class PlayerScore : MonoBehaviour {
 
     IEnumerator UpdateScore() {     //This CoRoutine will run in the background updating the score from the player every 1/2 second
         do {
-			AsteroidCountText.text = string.Format("Rocks:{0}",GM.AsteroidCount);
 			if(GM.PlayerShip!=null) {
 				ShipCountText.text = string.Format("Lives:{0}", GM.PlayerShip.Lives);
 			} else {

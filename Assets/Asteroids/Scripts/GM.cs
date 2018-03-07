@@ -148,7 +148,6 @@ public class GM : Singleton {
 			return;
 
 		case State.PlayLevel:		//Changing from this state is controlled using DuringState()
-			LogGameStateEvent();
 			PlayerShip.Show (true);
 			return;
 
@@ -158,23 +157,22 @@ public class GM : Singleton {
 			return;
 
 		case State.PlayerNewLife:
-			LogGameStateEvent();
 			if (PlayerShip.Lives == 0) {
 				CurrentState = State.PlayerDead;
+                LogGameStateEvent("Player Died");
 			} else {
 				PlayerShip.ReSpawn ();
 				CurrentState = State.NewLevel;
+                    LogGameStateEvent("Player New Level");
 			}
 			return;
 
 		case	State.PlayerDead:
-			LogGameStateEvent();
 			PS.GameOver = true;
 			TriggerChange (State.NewGame, 5f);
 			return;
 
 		case	State.WarpPlayer:
-			LogGameStateEvent ();
 			PlayerShip.Warp ();
 			TriggerChange (State.PlayLevel, 1f);
 			return;
@@ -464,25 +462,22 @@ public class GM : Singleton {
 		}
 	}
 
-	static	public	void	LogGameStateEvent() {
-		LogGameEvent (CurrentState.ToString ());
+	static	public	void	LogGameStateEvent(string vText) {
+        LogGameEvent (vText);
 	}
 	static	public	void	LogGameEvent(string vEvent) {
-		StringBuilder tSB = new StringBuilder ();
+        if(PS!=null) {
+            PS.DataSync.GetComponent<ImageOnAndFade>().ShowAndFade(1.0f);
+        }
 		Dictionary<string,object>	tDetail = new Dictionary<string,object> ();
-		tDetail.Add("Game",string.Format("Game{0}",sGM.mGameCount));
-		tDetail.Add("Level",string.Format("Level{0}",sGM.mLevel));
+        tDetail.Add("Game",string.Format("Game{0:d2}",sGM.mGameCount));
+        tDetail.Add("Level",string.Format("Level{0:d2}",sGM.mLevel));
 		tDetail.Add("Playtime",sGM.mPlayTime);
 		tDetail.Add("BulletCount",sGM.mBulletCount);
 		tDetail.Add("AsteroidHitCount",sGM.mAsteroidHitCount);
 		tDetail.Add("CheatTime",sGM.mCheatTime);
 		tDetail.Add("Asteroids",AsteroidCount);
 		Analytics.CustomEvent (vEvent, tDetail);
-		tSB.AppendFormat ("Event:{0}",vEvent);
-		foreach (var tItem in tDetail) {
-			tSB.AppendFormat (" {0}",tItem.ToString());
-		}
-		DebugMsg (tSB.ToString ());
 	}
 
 	#endregion
